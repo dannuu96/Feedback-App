@@ -1,9 +1,12 @@
 import { useState } from "react";
 
-function RatingsSelect() {
-  const [selected, setSelected] = useState(9);
-  const handleChange = (e) => {};
-  return (
+function RatingsSelect({select}) {
+  const [selected, setSelected] = useState();
+  const handleChange = (e) => {
+    setSelected(+e.currentTarget.value)
+      select(+e.currentTarget.value)
+}
+      return (
     <ul className="rating">
       {Array.from({ length: 10 }, (_, i) => (
         <li key={`rating-${i + 1}`}>
