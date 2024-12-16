@@ -1,40 +1,63 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import Card from "./shared/Card";
 import RatingsSelect from "./RatingsSelect";
 import Button from "./shared/Button";
+import FeedbackContext from "../context/FeedbackContext";
 
-function FeedbackForm({handleAdd}) {
+function FeedbackForm() {
   const [text, setText] = useState("");
   const [btnDisabled, setBtnDisabled] = useState(true);
   const [message, setMessage] = useState("");
-  const [rating, setRating] = useState();
+  const [rating, setRating] = useState(10);
+
+  const { addFeedback, feedbackEdit, updateFeedback } =
+    useContext(FeedbackContext);
+
+  useEffect(() => {
+    if (feedbackEdit.edit === true) {
+      setBtnDisabled(false);
+      setText(feedbackEdit.item.text);
+      setRating(feedbackEdit.item.rating);
+    }
+  }, [feedbackEdit]);
 
   const handleTextChange = (e) => {
-    if (text === "") {
+    const inputText = e.target.value;
+
+    if (inputText === "") {
       setBtnDisabled(true);
       setMessage(null);
-    } else if (text != "" && text.trim().length <= 8) {
-      setMessage("Text must be atleast 10 characters");
+    } else if (inputText.trim().length <= 8) {
+      setMessage("Text must be at least 10 characters");
       setBtnDisabled(true);
     } else {
       setMessage(null);
       setBtnDisabled(false);
     }
 
-    setText(e.target.value);
+    setText(inputText);
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (text.trim().length > 10) {
+    if (text.trim().length >= 10) {
       const newFeedback = {
         text,
         rating,
       };
 
-      handleAdd(newFeedback);
+      if (feedbackEdit.edit === true) {
+        // Update existing feedback
+        updateFeedback(feedbackEdit.item.id, newFeedback);
+      } else {
+        // Add new feedback
+        addFeedback(newFeedback);
+      }
 
-      
-      setText('')
+      // Reset the form fields
+      setText("");
+      setRating(10); // Reset rating to default
+      setBtnDisabled(true);
     }
   };
 
@@ -51,7 +74,7 @@ function FeedbackForm({handleAdd}) {
             value={text}
           />
           <Button type="submit" isDisabled={btnDisabled}>
-            Send
+            {feedbackEdit.edit ? "Update" : "Send"} {/* Change button text */}
           </Button>
         </div>
         {message && <div className="message">{message}</div>}
